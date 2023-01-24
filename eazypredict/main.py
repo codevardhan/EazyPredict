@@ -1,7 +1,7 @@
 import sklearn
 import xgboost
 import lightgbm
-import tqdm
+from tqdm import tqdm
 from sklearn.utils import all_estimators
 import numpy as np
 import pandas as pd
@@ -46,7 +46,7 @@ class EasyClassifier:
     def __init__(
         self,
         classififers="all",
-        save_dir="output",
+        save_dir=False,
         sort_by="accuracy",
         return_model=False,
         return_predictions=False,
@@ -76,7 +76,7 @@ class EasyClassifier:
         model_list = {}
         model_results = {}
 
-        for name, model in self.classifiers:
+        for name, model in tqdm(self.classifiers):
             model = model()
             model.fit(X_train, y_train.values.ravel())
             y_pred = model.predict(X_test)
@@ -140,7 +140,7 @@ class EasyClassifier:
 
 
 class EasyRegressor:
-    def __init__(self, regressors="all", save_dir="output", sort_by="rmse"):
+    def __init__(self, regressors="all", save_dir=False, sort_by="rmse"):
         self.regressors = regressors
         self.save_dir = save_dir
         self.sort_by = sort_by
@@ -166,7 +166,7 @@ class EasyRegressor:
         model_list = {}
         model_results = {}
 
-        for name, model in self.regressors:
+        for name, model in tqdm(self.regressors):
             model = model()
             model.fit(X_train, y_train.values.ravel())
             y_pred = model.predict(X_test)

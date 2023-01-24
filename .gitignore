@@ -2,3 +2,6 @@
 /output
 main.ipynb
 data_script.py
+/dist
+.eggs
+easypredict.egg-info
