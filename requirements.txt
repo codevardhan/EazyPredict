@@ -1,8 +1,7 @@
-sklearn
+scikit-learn
 xgboost
 lightgbm
 tqdm
-sklearn
 numpy
 pandas
 pickle
