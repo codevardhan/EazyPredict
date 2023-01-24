@@ -40,6 +40,7 @@ model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y
 
 print(model_results)
 ```
+### OUTPUT
 ```
                         Accuracy  f1 score  ROC AUC score
 XGBClassifier           0.978947  0.978990       0.979302
@@ -76,6 +77,8 @@ reg = EazyRegressor()
 models, predictions = reg.fit(X_train, X_test, y_train, y_test)
 
 print(models)
+```
+### OUTPUT
 ```
                                 RMSE  R Squared
 LinearRegression           54.964651   0.506806
