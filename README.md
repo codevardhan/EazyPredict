@@ -94,6 +94,10 @@ DecisionTreeRegressor      85.416106  -0.191051
 MLPRegressor              156.578937  -3.002373
 GaussianProcessRegressor  332.711971 -17.071231
 ```
+### Custom Estimators
+
+Get more estimators from [sklearn](https://scikit-learn.org/1.0/modules/generated/sklearn.utils.all_estimators.html).
+
 ```python
 custom_list = [
   "LinearSVC",
@@ -108,7 +112,7 @@ model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y
 
 print(model_results)
 ```
-OUTPUT
+### OUTPUT
 ```
                             Accuracy  f1 score  ROC AUC score
 AdaBoostClassifier          0.961404  0.961444       0.959245
