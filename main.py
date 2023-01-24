@@ -43,7 +43,14 @@ REGRESSORS = [
 
 
 class EasyClassifier:
-    def __init__(self, classififers="all", save_dir="output", sort_by="accuracy"):
+    def __init__(
+        self,
+        classififers="all",
+        save_dir="output",
+        sort_by="accuracy",
+        return_model=False,
+        return_predictions=False,
+    ):
         self.classifiers = classififers
         self.save_dir = save_dir
         self.sort_by = sort_by
