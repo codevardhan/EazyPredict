@@ -8,7 +8,7 @@ The 'EazyPredict' module was heavily inspired by [LazyPredict](https://github.co
 
 - The 'EazyPredict' module utilizes a limited number of prediction algorithms (around 9) in order to minimize memory usage and prevent potential issues on platforms such as Kaggle.
 
-- The user can enter a different list and number of prediction algorithms (as shown in the example below) to get custom comparisons.
+- Users have the option to input a custom list of prediction algorithms (as demonstrated in the example provided) in order to perform personalized comparisons.
 
 - The models can be saved to an output folder at the user's discretion and are returned as a dictionary, allowing for easy addition of custom hyperparameters.
 
@@ -94,7 +94,29 @@ DecisionTreeRegressor      85.416106  -0.191051
 MLPRegressor              156.578937  -3.002373
 GaussianProcessRegressor  332.711971 -17.071231
 ```
+```python
+custom_list = [
+  "LinearSVC",
+  "NearestCentroid",
+  "ExtraTreeClassifier",
+  "LinearDiscriminantAnalysis",
+  "AdaBoostClassifier"
+]
 
+clf = EazyClassifier(classififers=custom_list)
+model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y_test)
+
+print(model_results)
+```
+OUTPUT
+```
+                            Accuracy  f1 score  ROC AUC score
+AdaBoostClassifier          0.961404  0.961444       0.959245
+LinearDiscriminantAnalysis  0.961404  0.961089       0.950816
+ExtraTreeClassifier         0.908772  0.909134       0.905393
+NearestCentroid             0.898246  0.894875       0.865545
+LinearSVC                   0.838596  0.841756       0.867305
+```
 # Future Plans
 
 - Hyperparameter Tuning Feature
