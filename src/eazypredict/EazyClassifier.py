@@ -124,9 +124,37 @@ class EazyClassifier:
         result_df.columns = ["Accuracy", "f1 score", "ROC AUC score"]
 
         return model_list, prediction_list, result_df
-    
-    def create_ensemble(self, model_list):
-        for model in model_list:
-            print(model)
-        # estimators=[("knn", knn_best), ("rf", rf_best), ("log_reg", log_reg)]
-        # ensemble = VotingClassifier(estimators, voting="har")
+
+        def fitEnsemble(self, model_list):
+            estimators = []
+            ensemble_name = ""
+
+            if len(model_list) <= 5:
+                model_list = model_list[0 : len(model_list)]
+            else:
+                model_list = model_list[0:5]
+
+            print(len(model_list))
+
+            for model in model_list:
+                tup = (model, model_list[model])
+                estimators.append(tup)
+                ensemble_name += f"{model} "
+
+            ensemble_clf = VotingClassifier(estimators, voting="hard")
+            # ensemble_clf = clf.fitEnsemble(model_list)
+            ensemble_clf.fit(X_train, y_train)
+
+            y_pred = ensemble_clf.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            f1 = f1_score(y_test, y_pred)
+            roc_auc = roc_auc_score(y_test, y_pred)
+
+            result_dict = {}
+            result_dict["Accuracy"] = accuracy
+            result_dict["F1 score"] = f1_score
+            result_dict["ROC AUC score"] = roc_auc_score
+            result_dict["Name"] = ensemble_name
+
+            # result_df = pd.DataFrame(result_dict)
+            return result_dict
