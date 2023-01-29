@@ -3,6 +3,8 @@ import xgboost
 import lightgbm
 from tqdm import tqdm
 from sklearn.utils import all_estimators
+from sklearn.ensemble import VotingClassifier
+
 import numpy as np
 import pandas as pd
 import pickle
@@ -122,3 +124,9 @@ class EazyClassifier:
         result_df.columns = ["Accuracy", "f1 score", "ROC AUC score"]
 
         return model_list, prediction_list, result_df
+    
+    def create_ensemble(self, model_list):
+        for model in model_list:
+            print(model)
+        # estimators=[("knn", knn_best), ("rf", rf_best), ("log_reg", log_reg)]
+        # ensemble = VotingClassifier(estimators, voting="har")
