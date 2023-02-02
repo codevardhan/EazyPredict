@@ -11,6 +11,7 @@ from sklearn.metrics import (
     mean_squared_error,
 )
 import os
+from sklearn.ensemble import VotingRegressor
 
 
 REGRESSORS = [
@@ -24,6 +25,8 @@ REGRESSORS = [
     "MLPRegressor",
     "XGBRegressor",
     "LGBMRegressor",
+    
+    
 ]
 
 
@@ -48,7 +51,14 @@ class EazyRegressor:
             self.regressors.append(("LGBMRegressor", lightgbm.LGBMRegressor))
 
     def fit(self, X_train, y_train, X_test, y_test):
-
+        if isinstance(X_train, np.ndarray) or isinstance(X_test, np.ndarray):
+            X_train = pd.DataFrame(X_train)
+            X_test = pd.DataFrame(X_test)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        
         self.__getRegressorList()
 
         prediction_list = {}
@@ -105,3 +115,40 @@ class EazyRegressor:
         result_df.columns = ["RMSE", "R Squared"]
 
         return model_list, prediction_list, result_df
+    
+        def fitVotingEnsemble(self, model_dict, model_results, num_models=5):
+            """Creates an ensemble of models and returns the model and the performance report
+
+            Args:
+                model_dict (dictionary): A dictionary containing the different sklearn model names and the function names
+                model_results (DataFrame): A DataFrame containing the results of running eazypredict fit methods
+                num_models (int, optional): Number of models to be included in the embeddding. Defaults to 5.
+
+            Returns:
+                regressor, dataframe: Returns an ensemble sklearn classifier and the results validated on the dataset
+            """
+            estimators = []
+            ensemble_name = ""
+            model_results = model_results.iloc[:, 0]
+            count = 0
+            for model, acc in model_results.items():
+                estimators.append((model, model_dict[model]))
+                ensemble_name += f"{model} "
+                count += 1
+                if count == num_models:
+                    break
+            ensemble_reg = VotingRegressor(estimators)
+            ensemble_reg.fit(self.X_train, self.y_train.values.ravel())
+
+            y_pred = ensemble_reg.predict(self.X_test)
+
+            rmse = np.sqrt(mean_squared_error(self.y_test, self.y_pred))
+            r_squared = r2_score(self.y_test, self.y_pred)
+
+            result_dict = {}
+            result_dict["RMSE"] = rmse
+            result_dict["R Squared"] = r_squared
+            result_dict["Models"] = ensemble_name
+
+            result_df = pd.DataFrame(result_dict, index=[0])
+            return ensemble_reg, result_df

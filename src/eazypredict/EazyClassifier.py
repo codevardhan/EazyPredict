@@ -56,7 +56,15 @@ class EazyClassifier:
             self.classifiers.append(("LGBMClassifier", lightgbm.LGBMClassifier))
 
     def fit(self, X_train, y_train, X_test, y_test):
-
+        if isinstance(X_train, np.ndarray) or isinstance(X_test, np.ndarray):
+            X_train = pd.DataFrame(X_train)
+            X_test = pd.DataFrame(X_test)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        
+        
         self.__getClassifierList()
 
         prediction_list = {}
@@ -125,36 +133,46 @@ class EazyClassifier:
 
         return model_list, prediction_list, result_df
 
-        def fitEnsemble(self, model_list):
-            estimators = []
-            ensemble_name = ""
+    def fitVotingEnsemble(self, model_dict, model_results, num_models=5):
+        """Creates an ensemble of models and returns the model and the performance report
 
-            if len(model_list) <= 5:
-                model_list = model_list[0 : len(model_list)]
-            else:
-                model_list = model_list[0:5]
+        Args:
+            model_dict (dictionary): A dictionary containing the different sklearn model names and the function names
+            model_results (DataFrame): A DataFrame containing the results of running eazypredict fit methods
+            num_models (int, optional): Number of models to be included in the embeddding. Defaults to 5.
 
-            print(len(model_list))
-
-            for model in model_list:
-                tup = (model, model_list[model])
-                estimators.append(tup)
-                ensemble_name += f"{model} "
-
-            ensemble_clf = VotingClassifier(estimators, voting="hard")
-            # ensemble_clf = clf.fitEnsemble(model_list)
-            ensemble_clf.fit(X_train, y_train)
-
-            y_pred = ensemble_clf.predict(X_test)
-            accuracy = accuracy_score(y_test, y_pred)
-            f1 = f1_score(y_test, y_pred)
-            roc_auc = roc_auc_score(y_test, y_pred)
-
-            result_dict = {}
-            result_dict["Accuracy"] = accuracy
-            result_dict["F1 score"] = f1_score
-            result_dict["ROC AUC score"] = roc_auc_score
-            result_dict["Name"] = ensemble_name
-
-            # result_df = pd.DataFrame(result_dict)
-            return result_dict
+        Returns:
+            classifier, dataframe: Returns an ensemble sklearn classifier and the results validated on the dataset
+        """
+        estimators = []
+        ensemble_name = ""
+        model_results = model_results.iloc[:, 0]
+        count=0
+        for model, acc in model_results.items():
+            estimators.append((model, model_dict[model]))
+            ensemble_name += f"{model} "
+            count+=1
+            if count == num_models:
+                break
+            
+        ensemble_clf = VotingClassifier(estimators, voting="hard")
+        ensemble_clf.fit(X_train, y_train.values.ravel())
+        
+        y_pred = ensemble_clf.predict(X_test)
+            
+        accuracy = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        roc_auc = roc_auc_score(y_test, y_pred)
+        
+        result_dict = {}
+        result_dict["Accuracy"] = accuracy
+        result_dict["F1 score"] = f1
+        result_dict["ROC AUC score"] = roc_auc
+        result_dict["Name"] = ensemble_name
+        
+        result_df = pd.DataFrame(result_dict, index=[0])
+        return ensemble_clf, result_df 
+        
+if __name__ == "__main__":
+    clf = EazyClassifier()
+    
