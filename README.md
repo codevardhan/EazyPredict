@@ -39,7 +39,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,random_st
 
 clf = EazyClassifier()
 
-model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y_test)
+model_list, prediction_list, model_results = clf.fit(X_train, X_test, y_train, y_test)
 
 print(model_results)
 ```
@@ -95,6 +95,32 @@ DecisionTreeRegressor      85.416106  -0.191051
 MLPRegressor              156.578937  -3.002373
 GaussianProcessRegressor  332.711971 -17.071231
 ```
+
+### Creating an ensemble model
+
+```python
+reg = EazyRegressor()
+
+model_dict, prediction_list, model_results = reg.fit(X_train, y_train, X_test, y_test)
+
+ensemble_reg, ensemble_results = reg.fitVotingEnsemble(model_dict, model_results)
+print(ensemble_results)
+```
+### OUTPUT
+```
+                                RMSE  R Squared
+LinearRegression           54.964651   0.506806
+LGBMRegressor              55.941752   0.489115
+RandomForestRegressor      56.544922   0.478039
+KNeighborsRegressor        57.351191   0.463048
+XGBRegressor               58.316092   0.444828
+Ridge                      60.245277   0.407488
+NuSVR                      71.055247   0.175780
+DecisionTreeRegressor      85.416106  -0.191051
+MLPRegressor              156.578937  -3.002373
+GaussianProcessRegressor  332.711971 -17.071231
+```
+
 ### Custom Estimators
 
 Get more estimators from [sklearn](https://scikit-learn.org/1.0/modules/generated/sklearn.utils.all_estimators.html).
@@ -122,8 +148,10 @@ ExtraTreeClassifier         0.908772  0.909134       0.905393
 NearestCentroid             0.898246  0.894875       0.865545
 LinearSVC                   0.838596  0.841756       0.867305
 ```
+
+
+
 # Future Plans
 
 - Hyperparameter Tuning Feature
-- Ensemble of top 5 models
 - Parallel computation of training

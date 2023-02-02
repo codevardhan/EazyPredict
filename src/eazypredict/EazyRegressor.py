@@ -96,13 +96,13 @@ class EazyRegressor:
         if "LGBMRegressor" in regressor_list:
             self.regressors.append(("LGBMRegressor", lightgbm.LGBMRegressor))
 
-    def fit(self, X_train, y_train, X_test, y_test):
+    def fit(self, X_train, X_test, y_train, y_test):
         """Function to train the model on training data and evaluate it on the testing data
 
         Args:
             X_train (pandas.DataFrame/numpy.ndarray)): Training subset of feature data
-            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
             X_test (pandas.DataFrame/numpy.ndarray): Testing subset of feature data
+            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
             y_test (pandas.DataFrame/numpy.ndarray): Testing subset of label data
 
         Returns:
@@ -124,7 +124,11 @@ class EazyRegressor:
 
         for name, model in tqdm(self.regressors):
             model = model()
-            model.fit(X_train, y_train.values.ravel())
+            if isinstance(y_train, np.ndarray): 
+                model.fit(X_train, y_train.ravel())
+            else:
+                model.fit(X_train, y_train.values.ravel())
+                
             y_pred = model.predict(X_test)
 
             model_list[name] = model
@@ -173,39 +177,39 @@ class EazyRegressor:
 
         return model_list, prediction_list, result_df
     
-        def fitVotingEnsemble(self, model_dict, model_results, num_models=5):
-            """Creates an ensemble of models and returns the model and the performance report
+    def fitVotingEnsemble(self, model_dict, model_results, num_models=5):
+        """Creates an ensemble of models and returns the model and the performance report
 
-            Args:
-                model_dict (dictionary): A dictionary containing the different sklearn model names and the function names
-                model_results (DataFrame): A DataFrame containing the results of running eazypredict fit methods
-                num_models (int, optional): Number of models to be included in the embeddding. Defaults to 5.
+        Args:
+            model_dict (dictionary): A dictionary containing the different sklearn model names and the function names
+            model_results (DataFrame): A DataFrame containing the results of running eazypredict fit methods
+            num_models (int, optional): Number of models to be included in the embeddding. Defaults to 5.
 
-            Returns:
-                regressor, dataframe: Returns an ensemble sklearn classifier and the results validated on the dataset
-            """
-            estimators = []
-            ensemble_name = ""
-            model_results = model_results.iloc[:, 0]
-            count = 0
-            for model, acc in model_results.items():
-                estimators.append((model, model_dict[model]))
-                ensemble_name += f"{model} "
-                count += 1
-                if count == num_models:
-                    break
-            ensemble_reg = VotingRegressor(estimators)
-            ensemble_reg.fit(self.X_train, self.y_train.values.ravel())
+        Returns:
+            regressor, dataframe: Returns an ensemble sklearn classifier and the results validated on the dataset
+        """
+        estimators = []
+        ensemble_name = ""
+        model_results = model_results.iloc[:, 0]
+        count = 0
+        for model, acc in model_results.items():
+            estimators.append((model, model_dict[model]))
+            ensemble_name += f"{model} "
+            count += 1
+            if count == num_models:
+                break
+        ensemble_reg = VotingRegressor(estimators)
+        ensemble_reg.fit(self.X_train, self.y_train.values.ravel())
 
-            y_pred = ensemble_reg.predict(self.X_test)
+        y_pred = ensemble_reg.predict(self.X_test)
 
-            rmse = np.sqrt(mean_squared_error(self.y_test, self.y_pred))
-            r_squared = r2_score(self.y_test, self.y_pred)
+        rmse = np.sqrt(mean_squared_error(self.y_test, self.y_pred))
+        r_squared = r2_score(self.y_test, self.y_pred)
 
-            result_dict = {}
-            result_dict["RMSE"] = rmse
-            result_dict["R Squared"] = r_squared
-            result_dict["Models"] = ensemble_name
+        result_dict = {}
+        result_dict["RMSE"] = rmse
+        result_dict["R Squared"] = r_squared
+        result_dict["Models"] = ensemble_name
 
-            result_df = pd.DataFrame(result_dict, index=[0])
-            return ensemble_reg, result_df
+        result_df = pd.DataFrame(result_dict, index=[0])
+        return ensemble_reg, result_df

@@ -96,13 +96,13 @@ class EazyClassifier:
         if "LGBMClassifier" in classifier_list:
             self.classifiers.append(("LGBMClassifier", lightgbm.LGBMClassifier))
 
-    def fit(self, X_train, y_train, X_test, y_test):
+    def fit(self, X_train, X_test, y_train, y_test):
         """Function to train the model on training data and evaluate it on the testing data
 
         Args:
             X_train (pandas.DataFrame/numpy.ndarray)): Training subset of feature data
-            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
             X_test (pandas.DataFrame/numpy.ndarray): Testing subset of feature data
+            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
             y_test (pandas.DataFrame/numpy.ndarray): Testing subset of label data
 
         Raises:
@@ -128,7 +128,11 @@ class EazyClassifier:
 
         for name, model in tqdm(self.classifiers):
             model = model()
-            model.fit(X_train, y_train.values.ravel())
+            if isinstance(y_train, np.ndarray): 
+                model.fit(X_train, y_train.ravel())
+            else:
+                model.fit(X_train, y_train.values.ravel())
+                
             y_pred = model.predict(X_test)
 
             model_dict[name] = model
