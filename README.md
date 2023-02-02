@@ -109,7 +109,7 @@ print(ensemble_results)
 ### OUTPUT
 ```
                                                             RMSE        R Squared
-LGBMRegressor XGBRegressor RandomForestRegress...           54.964651   0.506806
+LGBMRegressor XGBRegressor RandomForestRegress...           51237.1098	0.810059
 ```
 
 ### Custom Estimators
