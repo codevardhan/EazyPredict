@@ -63,18 +63,19 @@ SGDClassifier           0.831579  0.834856       0.861811
 ```python
 from eazypredict.EazyRegressor import EazyRegressor
 
-from sklearn import datasets
+from sklearn.datasets import fetch_california_housing
+from sklearn.preprocessing import RobustScaler
+from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 import numpy as np
 
-boston = datasets.load_boston(as_frame=True)
-X, y = shuffle(boston.data, boston.target, random_state=13)
-X = X.astype(np.float32)
+california_housing = fetch_california_housing(as_frame=True)
+X, y = california_housing.data, california_housing.target
 
-offset = int(X.shape[0] * 0.9)
+scaler = RobustScaler()
+X_norm = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
 
-X_train, y_train = X[:offset], y[:offset]
-X_test, y_test = X[offset:], y[offset:]
+X_train, X_test, y_train, y_test = train_test_split(X_norm, y, test_size= 0.2)
 
 reg = EazyRegressor()
 models, predictions = reg.fit(X_train, X_test, y_train, y_test)
@@ -83,17 +84,17 @@ print(models)
 ```
 ### OUTPUT
 ```
-                                RMSE  R Squared
-LinearRegression           54.964651   0.506806
-LGBMRegressor              55.941752   0.489115
-RandomForestRegressor      56.544922   0.478039
-KNeighborsRegressor        57.351191   0.463048
-XGBRegressor               58.316092   0.444828
-Ridge                      60.245277   0.407488
-NuSVR                      71.055247   0.175780
-DecisionTreeRegressor      85.416106  -0.191051
-MLPRegressor              156.578937  -3.002373
-GaussianProcessRegressor  332.711971 -17.071231
+                           RMSE       R Squared
+LGBMRegressor              0.468025	  0.838435
+XGBRegressor               0.470601	  0.836651
+RandomForestRegressor      0.490834	  0.822303
+MLPRegressor               0.590093	  0.743167
+KNeighborsRegressor        0.646152	  0.692051
+NuSVR                      0.656935	  0.681687
+DecisionTreeRegressor      0.704143	  0.634294
+LinearRegression           0.736127	  0.600318
+Ridge                      0.736145	  0.600297
+GaussianProcessRegressor   10.893585	-86.528957
 ```
 
 ### Creating an ensemble model
@@ -109,7 +110,7 @@ print(ensemble_results)
 ### OUTPUT
 ```
                                                             RMSE        R Squared
-LGBMRegressor XGBRegressor RandomForestRegress...           51237.1098	0.810059
+LGBMRegressor XGBRegressor RandomForestRegress...           0.48638   0.825514
 ```
 
 ### Custom Estimators
