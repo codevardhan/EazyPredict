@@ -30,19 +30,60 @@ CLASSIFIERS = [
 
 
 class EazyClassifier:
+    """
+    For classification
+        from eazypredict.EazyClassifier import EazyClassifier
+
+        from sklearn.datasets import load_breast_cancer
+        from sklearn.model_selection import train_test_split
+
+        data = load_breast_cancer()
+        X = data.data
+        y = data.target
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,random_state =123)
+
+        clf = EazyClassifier()
+
+        model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y_test)
+
+        print(model_results)
+        
+    OUTPUT
+                            Accuracy  f1 score  ROC AUC score
+    XGBClassifier           0.978947  0.978990       0.979302
+    LGBMClassifier          0.971930  0.971930       0.969594
+    RandomForestClassifier  0.968421  0.968516       0.968953
+    RidgeClassifier         0.964912  0.964670       0.955671
+    MLPClassifier           0.961404  0.961185       0.952923
+    GaussianNB              0.957895  0.957707       0.950176
+    DecisionTreeClassifier  0.936842  0.937093       0.935800
+    KNeighborsClassifier    0.936842  0.936407       0.925264
+    SVC                     0.919298  0.917726       0.896778
+    SGDClassifier           0.831579  0.834856       0.861811
+    """
+    
     def __init__(
         self,
         classififers="all",
-        save_dir=False,
+        save_dir=None,
         sort_by="accuracy",
-        return_model=False,
-        return_predictions=False,
     ):
+        """Initializes the classifier class
+
+        Args:
+            classififers (str/list, optional): Takes in a custom list of sklearn classifiers. Defaults to "all".
+            save_dir (str, optional): Path to output folder to save models in a pickle format. Defaults to False.
+            sort_by (str, optional): One of accuracy, f1_score, roc_score. Sorts the output dataframe according to this metric. Defaults to "accuracy".
+        """
         self.classifiers = classififers
         self.save_dir = save_dir
         self.sort_by = sort_by
 
     def __getClassifierList(self):
+        """
+        Helper function to get all the classifier names and functions from given arguments
+        """
         if self.classifiers == "all":
             self.classifiers = CLASSIFIERS
 
@@ -56,6 +97,20 @@ class EazyClassifier:
             self.classifiers.append(("LGBMClassifier", lightgbm.LGBMClassifier))
 
     def fit(self, X_train, y_train, X_test, y_test):
+        """Function to train the model on training data and evaluate it on the testing data
+
+        Args:
+            X_train (pandas.DataFrame/numpy.ndarray)): Training subset of feature data
+            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
+            X_test (pandas.DataFrame/numpy.ndarray): Testing subset of feature data
+            y_test (pandas.DataFrame/numpy.ndarray): Testing subset of label data
+
+        Raises:
+            Exception: On failing to compute one of the evaluation metrics
+
+        Returns:
+            dictionary, dictionary, pandas.DataFrame: A dictionary of model_name:function_name, dictionary of model_name:results, sorted dataframe containing the results 
+        """
         if isinstance(X_train, np.ndarray) or isinstance(X_test, np.ndarray):
             X_train = pd.DataFrame(X_train)
             X_test = pd.DataFrame(X_test)
@@ -67,8 +122,8 @@ class EazyClassifier:
         
         self.__getClassifierList()
 
-        prediction_list = {}
-        model_list = {}
+        prediction_dict = {}
+        model_dict = {}
         model_results = {}
 
         for name, model in tqdm(self.classifiers):
@@ -76,8 +131,8 @@ class EazyClassifier:
             model.fit(X_train, y_train.values.ravel())
             y_pred = model.predict(X_test)
 
-            model_list[name] = model
-            prediction_list[name] = y_pred
+            model_dict[name] = model
+            prediction_dict[name] = y_pred
 
             if self.save_dir:
                 folder_path = os.path.join(self.save_dir, "classifier_model")
@@ -131,7 +186,7 @@ class EazyClassifier:
         result_df = pd.DataFrame(model_results).transpose()
         result_df.columns = ["Accuracy", "f1 score", "ROC AUC score"]
 
-        return model_list, prediction_list, result_df
+        return model_dict, prediction_dict, result_df
 
     def fitVotingEnsemble(self, model_dict, model_results, num_models=5):
         """Creates an ensemble of models and returns the model and the performance report

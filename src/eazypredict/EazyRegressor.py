@@ -32,12 +32,58 @@ REGRESSORS = [
 
 
 class EazyRegressor:
+    """
+    For regression
+        from eazypredict.EazyRegressor import EazyRegressor
+
+        from sklearn import datasets
+        from sklearn.utils import shuffle
+        import numpy as np
+
+        boston = datasets.load_boston(as_frame=True)
+        X, y = shuffle(boston.data, boston.target, random_state=13)
+        X = X.astype(np.float32)
+
+        offset = int(X.shape[0] * 0.9)
+
+        X_train, y_train = X[:offset], y[:offset]
+        X_test, y_test = X[offset:], y[offset:]
+
+        reg = EazyRegressor()
+        models, predictions = reg.fit(X_train, X_test, y_train, y_test)
+
+        print(models)
+        
+    OUTPUT
+                                    RMSE  R Squared
+    LinearRegression           54.964651   0.506806
+    LGBMRegressor              55.941752   0.489115
+    RandomForestRegressor      56.544922   0.478039
+    KNeighborsRegressor        57.351191   0.463048
+    XGBRegressor               58.316092   0.444828
+    Ridge                      60.245277   0.407488
+    NuSVR                      71.055247   0.175780
+    DecisionTreeRegressor      85.416106  -0.191051
+    MLPRegressor              156.578937  -3.002373
+    GaussianProcessRegressor  332.711971 -17.071231
+    """
     def __init__(self, regressors="all", save_dir=False, sort_by="rmse"):
+        """Initializes the classifier class
+
+        Args:
+            regressors (str/list, optional): Takes in a custom list of sklearn regressors. Defaults to "all".
+            save_dir (str, optional): Path to output folder to save models in a pickle format. Defaults to False.
+            sort_by (str, optional): One of rmse, r_squared. Sorts the output dataframe according to this metric. Defaults to "rmse".
+        """
+        
         self.regressors = regressors
         self.save_dir = save_dir
         self.sort_by = sort_by
 
     def __getRegressorList(self):
+        """
+        Helper function to get all the regressor names and functions from given arguments
+        """
         if self.regressors == "all":
             self.regressors = REGRESSORS
 
@@ -51,6 +97,17 @@ class EazyRegressor:
             self.regressors.append(("LGBMRegressor", lightgbm.LGBMRegressor))
 
     def fit(self, X_train, y_train, X_test, y_test):
+        """Function to train the model on training data and evaluate it on the testing data
+
+        Args:
+            X_train (pandas.DataFrame/numpy.ndarray)): Training subset of feature data
+            y_train (pandas.DataFrame/numpy.ndarray): Training subset of label data
+            X_test (pandas.DataFrame/numpy.ndarray): Testing subset of feature data
+            y_test (pandas.DataFrame/numpy.ndarray): Testing subset of label data
+
+        Returns:
+            dictionary, dictionary, pandas.DataFrame: A dictionary of model_name:function_name, dictionary of model_name:results, sorted dataframe containing the results 
+        """
         if isinstance(X_train, np.ndarray) or isinstance(X_test, np.ndarray):
             X_train = pd.DataFrame(X_train)
             X_test = pd.DataFrame(X_test)
