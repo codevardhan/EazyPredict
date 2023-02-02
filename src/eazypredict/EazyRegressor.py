@@ -203,13 +203,13 @@ class EazyRegressor:
 
         y_pred = ensemble_reg.predict(self.X_test)
 
-        rmse = np.sqrt(mean_squared_error(self.y_test, self.y_pred))
-        r_squared = r2_score(self.y_test, self.y_pred)
+        rmse = np.sqrt(mean_squared_error(self.y_test, y_pred))
+        r_squared = r2_score(self.y_test, y_pred)
 
         result_dict = {}
+        result_dict["Models"] = ensemble_name
         result_dict["RMSE"] = rmse
         result_dict["R Squared"] = r_squared
-        result_dict["Models"] = ensemble_name
 
         result_df = pd.DataFrame(result_dict, index=[0])
         return ensemble_reg, result_df

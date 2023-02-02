@@ -108,17 +108,8 @@ print(ensemble_results)
 ```
 ### OUTPUT
 ```
-                                RMSE  R Squared
-LinearRegression           54.964651   0.506806
-LGBMRegressor              55.941752   0.489115
-RandomForestRegressor      56.544922   0.478039
-KNeighborsRegressor        57.351191   0.463048
-XGBRegressor               58.316092   0.444828
-Ridge                      60.245277   0.407488
-NuSVR                      71.055247   0.175780
-DecisionTreeRegressor      85.416106  -0.191051
-MLPRegressor              156.578937  -3.002373
-GaussianProcessRegressor  332.711971 -17.071231
+                                                            RMSE        R Squared
+LGBMRegressor XGBRegressor RandomForestRegress...           54.964651   0.506806
 ```
 
 ### Custom Estimators

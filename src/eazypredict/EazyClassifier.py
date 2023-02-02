@@ -215,19 +215,19 @@ class EazyClassifier:
                 break
             
         ensemble_clf = VotingClassifier(estimators, voting="hard")
-        ensemble_clf.fit(X_train, y_train.values.ravel())
+        ensemble_clf.fit(self.X_train, self.y_train.values.ravel())
         
-        y_pred = ensemble_clf.predict(X_test)
+        y_pred = ensemble_clf.predict(self.X_test)
             
-        accuracy = accuracy_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
-        roc_auc = roc_auc_score(y_test, y_pred)
+        accuracy = accuracy_score(self.y_test, y_pred)
+        f1 = f1_score(self.y_test, y_pred)
+        roc_auc = roc_auc_score(self.y_test, y_pred)
         
         result_dict = {}
+        result_dict["Models"] = ensemble_name
         result_dict["Accuracy"] = accuracy
         result_dict["F1 score"] = f1
         result_dict["ROC AUC score"] = roc_auc
-        result_dict["Name"] = ensemble_name
         
         result_df = pd.DataFrame(result_dict, index=[0])
         return ensemble_clf, result_df 
