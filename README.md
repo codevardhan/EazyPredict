@@ -35,7 +35,7 @@ data = load_breast_cancer()
 X = data.data
 y = data.target
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,random_state =123)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,random_state=123)
 
 clf = EazyClassifier()
 
@@ -43,7 +43,7 @@ model_list, prediction_list, model_results = clf.fit(X_train, X_test, y_train, y
 
 print(model_results)
 ```
-### OUTPUT
+#### OUTPUT
 ```
                         Accuracy  f1 score  ROC AUC score
 XGBClassifier           0.978947  0.978990       0.979302
@@ -82,7 +82,7 @@ models, predictions = reg.fit(X_train, X_test, y_train, y_test)
 
 print(models)
 ```
-### OUTPUT
+#### OUTPUT
 ```
                            RMSE       R Squared
 LGBMRegressor              0.468025	  0.838435
@@ -107,7 +107,7 @@ model_dict, prediction_list, model_results = reg.fit(X_train, y_train, X_test, y
 ensemble_reg, ensemble_results = reg.fitVotingEnsemble(model_dict, model_results)
 print(ensemble_results)
 ```
-### OUTPUT
+#### OUTPUT
 ```
                                                             RMSE        R Squared
 LGBMRegressor XGBRegressor RandomForestRegress...           0.48638   0.825514
@@ -131,7 +131,7 @@ model_list, prediction_list, model_results = clf.fit(X_train, y_train, X_test, y
 
 print(model_results)
 ```
-### OUTPUT
+#### OUTPUT
 ```
                             Accuracy  f1 score  ROC AUC score
 AdaBoostClassifier          0.961404  0.961444       0.959245
@@ -140,8 +140,6 @@ ExtraTreeClassifier         0.908772  0.909134       0.905393
 NearestCentroid             0.898246  0.894875       0.865545
 LinearSVC                   0.838596  0.841756       0.867305
 ```
-
-
 
 # Future Plans
 
