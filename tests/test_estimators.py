@@ -116,6 +116,22 @@ def test_missing_booster_in_defaults_warns_but_continues(monkeypatch):
     assert not {n for n, _ in resolved} & set(BOOSTER_ESTIMATORS)
 
 
+@pytest.mark.slow
+def test_lightgbm_is_constructed_quietly(capfd):
+    """LightGBM takes `verbose` through `**kwargs` and omits it from `get_params()`,
+    so filtering the overrides against `get_params()` dropped it and let LightGBM
+    print training logs to stdout on every fold of every run."""
+    from sklearn.datasets import make_classification
+
+    if not has_booster("LGBMClassifier"):
+        pytest.skip("lightgbm not installed")
+
+    _, estimator = resolve_estimators(["LGBMClassifier"], "classifier")[0]
+    X, y = make_classification(n_samples=60, n_features=5, random_state=0)
+    estimator.fit(X, y)
+    assert capfd.readouterr().out == ""
+
+
 def test_has_booster_rejects_unknown_names():
     assert not has_booster("NotAnEstimator")
 

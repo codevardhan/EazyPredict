@@ -136,19 +136,16 @@ def available_estimators(kind: Kind) -> dict[str, type]:
 
 
 def _instantiate(name: str, cls: type) -> BaseEstimator:
-    """Construct an estimator, applying only the quiet params it actually accepts."""
+    """Construct an estimator, applying the quiet parameters recorded for it."""
     overrides = _PER_ESTIMATOR_PARAMS.get(name)
     if not overrides:
         return cls()
+    # Deliberately not filtered against `get_params()`: LightGBM accepts `verbose`
+    # through `**kwargs` and does not report it there, so filtering silently dropped
+    # the override and let it print training logs to stdout on every fold.
     try:
-        accepted = set(cls().get_params())
-    except Exception:  # pragma: no cover - estimators with required ctor args
-        return cls()
-
-    params = {k: v for k, v in overrides.items() if k in accepted}
-    try:
-        return cls(**params)
-    except TypeError:  # pragma: no cover - defensive
+        return cls(**overrides)
+    except TypeError:  # pragma: no cover - the estimator changed its signature
         return cls()
 
 
