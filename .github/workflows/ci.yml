@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --group dev
+      - run: uv run ruff check --output-format=github .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --all-extras --group dev
+      - run: uv run pytest -n auto --cov=eazypredict --cov-report=xml
+
+  # Proves the package imports and runs with core dependencies only: no xgboost,
+  # no lightgbm, no matplotlib. This is what catches a stray top-level optional import.
+  test-minimal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.11"
+      - run: uv venv --python 3.11
+      - run: uv pip install -e . pytest
+      - run: uv run python -c "import eazypredict; print(eazypredict.__version__)"
+      - run: uv run pytest -q
+
+  # The dependency floor is only meaningful if it is actually exercised. Pinned to
+  # 3.11 deliberately: scikit-learn 1.4 publishes no wheels for 3.13, so a floor job
+  # on 3.13 would silently resolve a much newer scikit-learn and test nothing.
+  test-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.11"
+      - run: uv venv --python 3.11
+      - run: >
+          uv pip install -e . pytest
+          "scikit-learn==1.4.*" "numpy==1.24.*" "pandas==2.0.*" "scipy==1.10.*"
+      - run: uv run pytest -q
+
+  test-slow:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --group dev
+      - run: uv run pytest -n auto --runslow
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv build
+      - run: uvx twine check dist/*
