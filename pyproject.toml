@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eazypredict"
-version = "0.3.0.dev0"
+version = "0.3.0"
 description = "Run and compare many scikit-learn models on a dataset in a few lines."
 readme = "README.md"
 requires-python = ">=3.10"

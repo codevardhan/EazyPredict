@@ -1,0 +1,60 @@
+name: Release
+
+# Publishing to PyPI cannot be undone - a version number is burned the moment it is
+# accepted, even if the file is later deleted. So the tag is checked against the
+# declared version and the full suite must pass before anything is uploaded.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Tag must match the version in pyproject.toml
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          declared=$(uv run --no-project --with tomli python -c \
+            "import tomli;print(tomli.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "$tagged" != "$declared" ]; then
+            echo "tag $tagged does not match pyproject version $declared" >&2
+            exit 1
+          fi
+      - run: uv sync --all-extras --group dev
+      - run: uv run pytest -n auto --runslow
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+      - run: uv build
+      - run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # Trusted Publishing: PyPI verifies this workflow's OIDC identity, so there is no
+    # long-lived API token to leak. Configure the publisher on PyPI before the first
+    # release, and require a reviewer on this environment to make the upload deliberate.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/eazypredict
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
