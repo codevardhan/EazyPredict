@@ -73,6 +73,16 @@ def test_legacy_packaging_files_removed():
     assert not (PROJECT_ROOT / "requirements.txt").exists()
 
 
+def test_the_type_marker_ships(pyproject):
+    """``package-data`` referenced a ``py.typed`` that did not exist, so the wheel
+    carried the ``Typing :: Typed`` classifier while every downstream type checker
+    ignored our annotations."""
+    import eazypredict
+
+    assert (Path(eazypredict.__file__).parent / "py.typed").is_file()
+    assert "py.typed" in pyproject["tool"]["setuptools"]["package-data"]["eazypredict"]
+
+
 def test_boosters_are_an_optional_extra(pyproject):
     """bug #19: xgboost and lightgbm must not be core requirements."""
     core = {_requirement_name(r) for r in pyproject["project"]["dependencies"]}
