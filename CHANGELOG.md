@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `save_dir` writes each fitted pipeline via `joblib` plus a `metadata.json` recording
   the seed, data shape and library versions.
 - `py.typed`, a test suite, CI, and `ruff`/`mypy` configuration.
+- The README was rewritten around the new API, and every one of its examples is now
+  executed by the test suite. Unexecuted examples are how the `fit` argument order went
+  wrong in the docs for two years without anyone noticing.
 
 ### Fixed
 
@@ -57,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   does, instead of silently.
 - Shape inspection used `np.shape`/`np.ndim`, which dispatch through
   `__array_function__` and fail on strict array-like inputs.
+- LightGBM printed training logs to stdout on every fold of every run. It accepts
+  `verbose` through `**kwargs` and omits it from `get_params()`, so filtering the quiet
+  defaults against `get_params()` silently dropped the one that mattered.
 - Models were saved through an unclosed `pickle` writer; `joblib` and a context manager
   are now used.
 - **The published package declared no dependencies at all.** `pip install eazypredict`
